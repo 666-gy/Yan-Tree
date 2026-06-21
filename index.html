@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌳 树洞</title>
+  <style>
+    /* ========== Reset & Base ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #faf6f1;
+      color: #3d3d3d;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* ========== Header ========== */
+    .header {
+      text-align: center;
+      padding: 1.5rem 0 2rem;
+    }
+    .logo { font-size: 2.8rem; margin-bottom: 0.3rem; }
+    h1 {
+      font-size: 1.8rem; font-weight: 700;
+      color: #a0764f; letter-spacing: 0.05em;
+    }
+    .subtitle {
+      color: #999; font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    /* ========== Card ========== */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 1px solid #f0e8de;
+    }
+    .card-title {
+      font-size: 1.05rem; font-weight: 600;
+      color: #a0764f; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ========== Emoji Picker ========== */
+    .emoji-label { font-size: 0.8rem; color: #999; margin-bottom: 0.4rem; }
+    .emojis {
+      display: flex; gap: 0.35rem; flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .emoji-btn {
+      width: 2.3rem; height: 2.3rem;
+      border: 2px solid transparent; border-radius: 10px;
+      background: #faf6f1; font-size: 1.1rem;
+      cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .emoji-btn:active { transform: scale(0.92); }
+    .emoji-btn.active { border-color: #c4946a; background: #e8d5c0; }
+
+    /* ========== Textarea ========== */
+    textarea {
+      width: 100%; min-height: 150px;
+      padding: 0.8rem 1rem;
+      border: 2px solid #f0e8de; border-radius: 10px;
+      font-family: inherit; font-size: 0.9rem; line-height: 1.8;
+      color: #3d3d3d; resize: vertical;
+      transition: border-color 0.2s;
+      background: #faf6f1;
+    }
+    textarea:focus {
+      outline: none; border-color: #c4946a; background: #fff;
+    }
+    textarea::placeholder { color: #bbb; font-style: italic; }
+    .char-count {
+      text-align: right; font-size: 0.75rem;
+      color: #bbb; margin-top: 0.3rem;
+    }
+
+    /* ========== Button ========== */
+    .btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.4rem; width: 100%;
+      padding: 0.75rem; border: none; border-radius: 10px;
+      font-family: inherit; font-size: 0.95rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #c4946a; color: #fff;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:active { transform: scale(0.98); background: #a0764f; }
+    .btn-primary:disabled { opacity: 0.5; }
+    .btn-secondary {
+      background: #faf6f1; color: #a0764f;
+      border: 2px solid #f0e8de;
+    }
+    .btn-secondary:active { background: #e8d5c0; }
+
+    /* ========== Hash Viewer ========== */
+    .letter-display {
+      background: #faf6f1; border-radius: 10px;
+      padding: 1rem; margin-bottom: 1rem;
+      white-space: pre-wrap; line-height: 1.8;
+    }
+    .letter-meta {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .letter-emoji { font-size: 1.5rem; }
+    .letter-time { font-size: 0.75rem; color: #999; }
+    .reply-label {
+      color: #85b79d; font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .reply-content {
+      background: #f0f7f2; border-radius: 10px;
+      padding: 1rem; white-space: pre-wrap; line-height: 1.8;
+    }
+
+    /* ========== Result Box ========== */
+    .result-box {
+      display: none; margin-top: 1rem;
+      padding: 1.2rem; border-radius: 10px;
+      text-align: center; animation: fadeIn 0.4s ease;
+    }
+    .result-box.show { display: block; }
+    .result-box.success { background: #f0f7f2; border: 1px solid #85b79d; }
+    .result-box.info { background: #fdf6f0; border: 1px solid #e8a87c; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .url-box {
+      display: flex; gap: 0.4rem; margin: 0.8rem 0;
+    }
+    .url-box input {
+      flex: 1; padding: 0.5rem 0.8rem;
+      border: 2px solid #f0e8de; border-radius: 8px;
+      font-size: 0.75rem; background: #fff;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .url-box button {
+      padding: 0.5rem 0.9rem; white-space: nowrap;
+      background: #85b79d; color: #fff;
+      border: none; border-radius: 8px;
+      cursor: pointer; font-size: 0.85rem;
+    }
+    .url-box button:active { background: #6da084; }
+    .copy-hint { font-size: 0.7rem; color: #bbb; }
+
+    /* ========== Tip ========== */
+    .tip {
+      text-align: center; padding: 1.5rem 0;
+      color: #bbb; font-size: 0.8rem; line-height: 1.8;
+    }
+    .tip span { display: block; }
+
+    /* ========== Section toggle ========== */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ========== Loading ========== */
+    .loading {
+      text-align: center; padding: 3rem 0; color: #999;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="logo">🌳</div>
+    <h1>树洞</h1>
+    <p class="subtitle">把心事写下来，用链接传递</p>
+  </header>
+
+  <!-- ===== Section 1: 写信 ===== -->
+  <div class="section active" id="sWrite">
+    <div class="card">
+      <div class="card-title">✉️ 写一封匿名信</div>
+
+      <div class="emoji-label">选一个心情符号</div>
+      <div class="emojis" id="emojiPicker"></div>
+
+      <textarea id="letterInput" placeholder="写下你想说的话……&#10;&#10;可以是一个秘密、一段心事、&#10;或者只是今天想分享的一件小事。&#10;&#10;树洞会认真读完。" maxlength="2000"></textarea>
+      <div class="char-count"><span id="charCount">0</span> / 2000</div>
+
+      <button class="btn btn-primary" id="submitBtn" onclick="handleWrite()">📮 生成链接</button>
+
+      <div class="result-box" id="writeResult"></div>
+    </div>
+
+    <div class="tip">
+      <span>🌱 所有内容只存于你分享的链接里</span>
+      <span>不经过任何服务器，完全隐私</span>
+    </div>
+  </div>
+
+  <!-- ===== Section 2: 看信 + 回信 ===== -->
+  <div class="section" id="sLetter">
+    <div class="card">
+      <div class="card-title">💌 来信</div>
+      <div id="letterDisplay"></div>
+
+      <div id="replySection">
+        <div class="card-title" style="margin-top:1.5rem;">✍️ 写回信</div>
+        <textarea id="replyInput" placeholder="用心回复……" maxlength="2000"></textarea>
+        <div class="char-count"><span id="replyCount">0</span> / 2000</div>
+        <button class="btn btn-primary" id="replyBtn" onclick="handleReply()">📮 生成回信链接</button>
+        <div class="result-box" id="replyResult"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-secondary" style="width:auto;display:inline-flex;padding:0.6rem 1.4rem;" onclick="goHome()">← 我也要写信</button>
+    </div>
+  </div>
+
+  <!-- ===== Section 3: 只看信（已有回信） ===== -->
+  <div class="section" id="sReadOnly">
+    <div class="card">
+      <div class="card-title">💌 来信</div>
+      <div id="roLetterDisplay"></div>
+      <div id="roReplyDisplay"></div>
+    </div>
+    <div style="text-align:center;">
+      <button class="btn btn-secondary" style="width:auto;display:inline-flex;padding:0.6rem 1.4rem;" onclick="goHome()">📮 我也要写信</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ========== Emojis ==========
+  const EMOJIS = ['💌','🌧️','☀️','🌈','🌙','🍂','🌸','💫','🕊️'];
+  let selectedEmoji = '💌';
+  let currentLetter = null;  // decoded data from hash
+
+  // Init emoji picker
+  const picker = document.getElementById('emojiPicker');
+  EMOJIS.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-btn' + (e === '💌' ? ' active' : '');
+    btn.textContent = e;
+    btn.dataset.emoji = e;
+    btn.onclick = () => {
+      picker.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedEmoji = e;
+    };
+    picker.appendChild(btn);
+  });
+
+  // ========== Char Count ==========
+  document.getElementById('letterInput').addEventListener('input', () => {
+    document.getElementById('charCount').textContent = document.getElementById('letterInput').value.length;
+  });
+  document.getElementById('replyInput').addEventListener('input', () => {
+    document.getElementById('replyCount').textContent = document.getElementById('replyInput').value.length;
+  });
+
+  // ========== Hash Navigation ==========
+  function onHashChange() {
+    const hash = window.location.hash.slice(1);
+    if (!hash || hash[0] !== 'L') {
+      showSection('sWrite');
+      return;
+    }
+    try {
+      const raw = decodeURIComponent(hash.slice(1));
+      const data = JSON.parse(raw);
+      currentLetter = data;
+
+      if (data.r) {
+        // Has reply → read-only mode
+        showSection('sReadOnly');
+        document.getElementById('roLetterDisplay').innerHTML = renderLetter(data);
+        document.getElementById('roReplyDisplay').innerHTML = `
+          <div style="margin-top:1.5rem;">
+            <div class="card-title" style="margin-bottom:0;">📨 回信</div>
+            <div class="reply-content">${escHtml(data.r)}</div>
+          </div>
+        `;
+      } else {
+        // Letter only → show + reply form
+        showSection('sLetter');
+        document.getElementById('letterDisplay').innerHTML = renderLetter(data);
+        document.getElementById('replySection').style.display = 'block';
+        document.getElementById('replyInput').value = '';
+        document.getElementById('replyCount').textContent = '0';
+        document.getElementById('replyResult').className = 'result-box';
+        document.getElementById('replyResult').style.display = 'none';
+      }
+    } catch (e) {
+      showSection('sWrite');
+    }
+  }
+
+  function renderLetter(data) {
+    const time = new Date(data.t * 1000).toLocaleString('zh-CN', {
+      month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    return `
+      <div class="letter-meta">
+        <span class="letter-emoji">${data.e || '💌'}</span>
+        <span class="letter-time">${time}</span>
+      </div>
+      <div class="letter-display">${escHtml(data.c)}</div>
+    `;
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ========== Write ==========
+  function handleWrite() {
+    const content = document.getElementById('letterInput').value.trim();
+    if (!content) {
+      showResult('writeResult', '请写点什么 🌱', 'info');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = '⏳ 生成中...';
+
+    const data = {
+      e: selectedEmoji,
+      c: content,
+      t: Math.floor(Date.now() / 1000)
+    };
+
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    const url = window.location.origin + window.location.pathname + '#L' + encoded;
+
+    showResult('writeResult', `
+      <div style="font-size:2rem;margin-bottom:0.5rem;">✨</div>
+      <p style="font-weight:600;color:#a0764f;">链接已生成</p>
+      <p style="font-size:0.85rem;color:#999;margin:0.5rem 0;">复制这个链接，发给树洞主人</p>
+      <div class="url-box">
+        <input type="text" value="${escHtml(url)}" readonly onclick="this.select()" id="writeUrlInput" />
+        <button onclick="copyUrl('writeUrlInput')">📋 复制</button>
+      </div>
+      <p class="copy-hint">只有拥有这个链接的人才能看到内容</p>
+    `, 'success');
+
+    btn.disabled = false; btn.innerHTML = '📮 生成链接';
+  }
+
+  // ========== Reply ==========
+  function handleReply() {
+    const reply = document.getElementById('replyInput').value.trim();
+    if (!reply) {
+      showResult('replyResult', '请写点回信内容 🌱', 'info');
+      return;
+    }
+
+    const btn = document.getElementById('replyBtn');
+    btn.disabled = true; btn.textContent = '⏳ 生成中...';
+
+    const data = { ...currentLetter, r: reply, rt: Math.floor(Date.now() / 1000) };
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    const url = window.location.origin + window.location.pathname + '#L' + encoded;
+
+    showResult('replyResult', `
+      <div style="font-size:2rem;margin-bottom:0.5rem;">📨</div>
+      <p style="font-weight:600;color:#85b79d;">回信链接已生成</p>
+      <p style="font-size:0.85rem;color:#999;margin:0.5rem 0;">复制这个链接，发给写信的人</p>
+      <div class="url-box">
+        <input type="text" value="${escHtml(url)}" readonly onclick="this.select()" id="replyUrlInput" />
+        <button onclick="copyUrl('replyUrlInput')">📋 复制</button>
+      </div>
+      <p class="copy-hint">对方打开就能看到你的回信</p>
+    `, 'success');
+
+    btn.disabled = false; btn.innerHTML = '📮 生成回信链接';
+
+    // Hide reply form after generation
+    document.getElementById('replySection').style.display = 'none';
+  }
+
+  // ========== Helpers ==========
+  function showResult(id, html, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = html;
+    el.className = 'result-box show ' + type;
+    el.style.display = 'block';
+  }
+
+  function escHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  function copyUrl(inputId) {
+    const input = document.getElementById(inputId);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btn = input.nextElementSibling;
+        const orig = btn.textContent;
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    } else {
+      input.select();
+      document.execCommand('copy');
+    }
+  }
+
+  function goHome() {
+    window.location.hash = '';
+    showSection('sWrite');
+    // Clean up write result
+    document.getElementById('writeResult').className = 'result-box';
+    document.getElementById('writeResult').style.display = 'none';
+  }
+
+  // ========== Init ==========
+  window.addEventListener('hashchange', onHashChange);
+  onHashChange();
+</script>
+</body>
+</html>
